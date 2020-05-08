@@ -1,0 +1,12 @@
+#! /bin/bash
+# This script helps to restart the service
+echo  "please enter the Servic Name to start "
+read Service
+systemctl is-active $Service  > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+systemctl start $Service
+fi
+echo "***********************************************"
+echo "$Service is Restarted "
+echo "*************************************************"
+systemctl status $Service
