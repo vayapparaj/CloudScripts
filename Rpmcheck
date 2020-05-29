@@ -1,0 +1,8 @@
+#! /bin/bash
+echo " Please enter the rpm to check :"
+read rpm
+if rpm -q | grep $rpm  2>$1 > /dev/null;then
+         dnf info $rpm
+else
+dnf install -y $rpm
+fi
