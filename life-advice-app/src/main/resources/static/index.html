@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Advice App</title>
+  <style>
+    :root {
+      --primary: #6c63ff;
+      --primary-dark: #574fd6;
+      --accent: #ff6584;
+      --bg: #f0f2ff;
+      --card: #ffffff;
+      --text: #2d2d2d;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --shadow: 0 4px 20px rgba(108,99,255,0.12);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, #9b8af8 100%);
+      color: white; padding: 20px 32px; display: flex;
+      align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+    header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; }
+    header p  { font-size: 0.85rem; opacity: 0.85; margin-top: 2px; }
+    .header-stats { display: flex; gap: 24px; text-align: center; }
+    .stat-item span:first-child { display: block; font-size: 1.5rem; font-weight: 700; }
+    .stat-item span:last-child  { font-size: 0.75rem; opacity: 0.8; }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+    .grid-2 { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+
+    /* ── SIDEBAR ── */
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+    .panel {
+      background: var(--card); border-radius: 16px;
+      padding: 20px; box-shadow: var(--shadow);
+    }
+    .panel h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+
+    /* SEARCH BOX */
+    .search-wrap { position: relative; margin-bottom: 10px; }
+    .search-wrap input {
+      width: 100%; padding: 10px 14px 10px 38px;
+      border: 2px solid var(--border); border-radius: 10px;
+      font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--primary); }
+    .search-wrap::before { content:'🔍'; position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:0.9rem; }
+    .btn {
+      display: block; width: 100%; padding: 10px 16px; border: none;
+      border-radius: 10px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+      transition: all 0.2s; text-align: center;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg); color: var(--primary); border: 2px solid var(--primary); margin-top: 8px; }
+    .btn-secondary:hover { background: var(--primary); color: white; }
+
+    /* CATEGORY LIST */
+    .cat-btn {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px; cursor: pointer;
+      transition: all 0.18s; border: 2px solid transparent;
+      background: var(--bg); margin-bottom: 6px; font-size: 0.88rem;
+    }
+    .cat-btn:hover  { border-color: var(--primary); background: #ede9ff; }
+    .cat-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .cat-btn .badge {
+      margin-left: auto; background: rgba(255,255,255,0.3);
+      border-radius: 20px; padding: 1px 8px; font-size: 0.75rem;
+    }
+    .cat-btn:not(.active) .badge { background: white; color: var(--primary); }
+
+    /* FILTERS */
+    select {
+      width: 100%; padding: 8px 12px; border: 2px solid var(--border);
+      border-radius: 8px; font-size: 0.88rem; margin-bottom: 8px;
+      background: white; outline: none; cursor: pointer;
+    }
+    select:focus { border-color: var(--primary); }
+
+    /* ── MAIN ── */
+    .main-area { min-height: 400px; }
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-header h2 { font-size: 1.2rem; font-weight: 700; }
+    .result-count { font-size: 0.8rem; color: var(--muted); background: var(--bg); padding: 4px 10px; border-radius: 20px; }
+
+    /* ADVICE CARD */
+    .advice-card {
+      background: var(--card); border-radius: 16px; padding: 22px;
+      box-shadow: var(--shadow); margin-bottom: 16px;
+      border-left: 5px solid var(--primary); transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .advice-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,99,255,0.18); }
+    .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+    .card-emoji { font-size: 1.6rem; }
+    .card-meta { flex: 1; }
+    .card-question { font-size: 1rem; font-weight: 700; line-height: 1.4; }
+    .card-category { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+    .card-answer { font-size: 0.9rem; line-height: 1.65; color: #444; }
+    .card-answer.collapsed { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .card-tips {
+      margin-top: 12px; padding: 10px 14px; background: #f0fdf4;
+      border-radius: 8px; border-left: 3px solid var(--success);
+      font-size: 0.85rem; color: #166534;
+    }
+    .card-footer { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+    .tag {
+      background: #ede9ff; color: var(--primary);
+      padding: 3px 10px; border-radius: 20px; font-size: 0.75rem;
+    }
+    .badge-urgency, .badge-diff {
+      padding: 3px 10px; border-radius: 20px; font-size: 0.73rem; font-weight: 600;
+    }
+    .urgency-LOW      { background:#d1fae5; color:#065f46; }
+    .urgency-MEDIUM   { background:#fef3c7; color:#92400e; }
+    .urgency-HIGH     { background:#fee2e2; color:#991b1b; }
+    .urgency-CRITICAL { background:#dc2626; color:white; }
+    .diff-BEGINNER     { background:#dbeafe; color:#1d4ed8; }
+    .diff-INTERMEDIATE { background:#ede9fe; color:#5b21b6; }
+    .diff-ADVANCED     { background:#fce7f3; color:#9d174d; }
+    .read-more { margin-left: auto; color: var(--primary); font-size: 0.8rem; cursor: pointer; font-weight: 600; background: none; border: none; }
+
+    /* RANDOM CARD */
+    .random-card {
+      background: linear-gradient(135deg, #6c63ff, #9b8af8);
+      color: white; border-radius: 16px; padding: 24px;
+      margin-bottom: 24px; box-shadow: var(--shadow);
+    }
+    .random-card .label { font-size: 0.8rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 1px; }
+    .random-card .question { font-size: 1.05rem; font-weight: 700; margin: 8px 0; }
+    .random-card .answer { font-size: 0.88rem; opacity: 0.93; line-height: 1.6; }
+    .random-card .refresh-btn {
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+      background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4);
+      color: white; padding: 8px 18px; border-radius: 20px; cursor: pointer;
+      font-size: 0.85rem; font-weight: 600; transition: background 0.2s;
+    }
+    .random-card .refresh-btn:hover { background: rgba(255,255,255,0.35); }
+
+    /* EMPTY / LOADING */
+    .empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty .icon { font-size: 3rem; margin-bottom: 12px; }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.7s linear infinite; margin: 40px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--text); color: white; padding: 12px 20px;
+      border-radius: 10px; font-size: 0.9rem; z-index: 1000;
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 768px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .header-stats { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🌟 Life Advice App</h1>
+    <p>Your personal guide to everyday challenges</p>
+  </div>
+  <div class="header-stats" id="headerStats">
+    <div class="stat-item"><span id="totalAdvice">—</span><span>Advice Entries</span></div>
+    <div class="stat-item"><span id="totalCats">—</span><span>Categories</span></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid-2">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar">
+
+      <!-- SEARCH -->
+      <div class="panel">
+        <h3>Search</h3>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="e.g. stress, money, focus…" />
+        </div>
+        <button class="btn btn-primary" onclick="doSearch()">Search Advice</button>
+        <button class="btn btn-secondary" onclick="loadAll()">Show All</button>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="panel">
+        <h3>Filters</h3>
+        <select id="urgencyFilter" onchange="applyFilter()">
+          <option value="">All Urgency Levels</option>
+          <option value="LOW">🟢 Low</option>
+          <option value="MEDIUM">🟡 Medium</option>
+          <option value="HIGH">🔴 High</option>
+          <option value="CRITICAL">🚨 Critical</option>
+        </select>
+        <select id="diffFilter" onchange="applyFilter()">
+          <option value="">All Difficulty Levels</option>
+          <option value="BEGINNER">🔵 Beginner</option>
+          <option value="INTERMEDIATE">🟣 Intermediate</option>
+          <option value="ADVANCED">🔴 Advanced</option>
+        </select>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="panel">
+        <h3>Browse by Category</h3>
+        <div id="categoryList"><div class="spinner"></div></div>
+      </div>
+
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="main-area">
+
+      <!-- RANDOM CARD -->
+      <div class="random-card" id="randomCard">
+        <div class="label">✨ Advice of the Moment</div>
+        <div class="question" id="randomQ">Loading…</div>
+        <div class="answer" id="randomA"></div>
+        <button class="refresh-btn" onclick="loadRandom()">🔀 Another one</button>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="section-header">
+        <h2 id="sectionTitle">All Advice</h2>
+        <span class="result-count" id="resultCount"></span>
+      </div>
+      <div id="adviceList"><div class="spinner"></div></div>
+
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const BASE = '/api';
+  let allAdvice = [];
+  let activeCategory = null;
+
+  /* ── BOOT ─────────────────────────────────────────────────────────────── */
+  async function init() {
+    await Promise.all([loadStats(), loadCategories(), loadRandom(), loadAll()]);
+  }
+
+  /* ── STATS ── */
+  async function loadStats() {
+    const r = await fetch(`${BASE}/stats`).then(r => r.json());
+    if (r.success) {
+      document.getElementById('totalAdvice').textContent = r.data.totalAdvice;
+      document.getElementById('totalCats').textContent   = r.data.totalCategories;
+    }
+  }
+
+  /* ── CATEGORIES ── */
+  async function loadCategories() {
+    const r = await fetch(`${BASE}/categories`).then(r => r.json());
+    const list = document.getElementById('categoryList');
+    if (!r.success) { list.innerHTML = '<p style="color:red">Failed to load</p>'; return; }
+    list.innerHTML = r.data.map(c => `
+      <div class="cat-btn" id="cat-${c.id}" onclick="selectCategory('${c.name}', ${c.id})">
+        <span>${c.iconEmoji}</span>
+        <span>${c.name}</span>
+        <span class="badge">${c.adviceCount}</span>
+      </div>`).join('');
+  }
+
+  /* ── RANDOM ── */
+  async function loadRandom() {
+    document.getElementById('randomQ').textContent = 'Loading…';
+    document.getElementById('randomA').textContent = '';
+    const r = await fetch(`${BASE}/advice/random`).then(r => r.json());
+    if (r.success && r.data) {
+      document.getElementById('randomQ').textContent = r.data.question;
+      document.getElementById('randomA').textContent = r.data.answer.substring(0, 250) + '…';
+    }
+  }
+
+  /* ── ALL ADVICE ── */
+  async function loadAll() {
+    clearActiveCategory();
+    activeCategory = null;
+    showLoading();
+    const r = await fetch(`${BASE}/advice`).then(r => r.json());
+    allAdvice = r.data || [];
+    document.getElementById('sectionTitle').textContent = 'All Advice';
+    renderAdvice(allAdvice);
+  }
+
+  /* ── BY CATEGORY ── */
+  async function selectCategory(name, id) {
+    clearActiveCategory();
+    activeCategory = name;
+    document.getElementById(`cat-${id}`).classList.add('active');
+    showLoading();
+    const r = await fetch(`${BASE}/advice/category/${encodeURIComponent(name)}`).then(r => r.json());
+    allAdvice = r.data || [];
+    document.getElementById('sectionTitle').textContent = name;
+    renderAdvice(allAdvice);
+  }
+
+  /* ── SEARCH ── */
+  async function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) { loadAll(); return; }
+    clearActiveCategory();
+    showLoading();
+    const r = await fetch(`${BASE}/advice/search?q=${encodeURIComponent(q)}`).then(r => r.json());
+    allAdvice = r.data || [];
+    document.getElementById('sectionTitle').textContent = `Results for "${q}"`;
+    renderAdvice(allAdvice);
+  }
+
+  /* ── FILTER ── */
+  function applyFilter() {
+    const urgency = document.getElementById('urgencyFilter').value;
+    const diff    = document.getElementById('diffFilter').value;
+    let filtered = [...allAdvice];
+    if (urgency) filtered = filtered.filter(a => a.urgencyLevel === urgency);
+    if (diff)    filtered = filtered.filter(a => a.difficulty   === diff);
+    renderAdvice(filtered, false);
+  }
+
+  /* ── RENDER ── */
+  function renderAdvice(list, updateAll = true) {
+    const el = document.getElementById('adviceList');
+    document.getElementById('resultCount').textContent = `${list.length} result${list.length !== 1 ? 's' : ''}`;
+    if (!list.length) {
+      el.innerHTML = `<div class="empty"><div class="icon">🔍</div><p>No advice found. Try different keywords or select a category.</p></div>`;
+      return;
+    }
+    el.innerHTML = list.map((a, i) => `
+      <div class="advice-card" onclick="toggleCard(${i})">
+        <div class="card-header">
+          <span class="card-emoji">${a.categoryEmoji || '💡'}</span>
+          <div class="card-meta">
+            <div class="card-question">${escHtml(a.question)}</div>
+            <div class="card-category">${a.categoryName}</div>
+          </div>
+        </div>
+        <div class="card-answer collapsed" id="ans-${i}">${escHtml(a.answer)}</div>
+        ${a.tips ? `<div class="card-tips">💡 <strong>Tip:</strong> ${escHtml(a.tips)}</div>` : ''}
+        <div class="card-footer">
+          ${a.urgencyLevel ? `<span class="badge-urgency urgency-${a.urgencyLevel}">${urgencyIcon(a.urgencyLevel)} ${a.urgencyLevel}</span>` : ''}
+          ${a.difficulty   ? `<span class="badge-diff diff-${a.difficulty}">${a.difficulty}</span>` : ''}
+          ${(a.tags||'').split(',').slice(0,3).map(t => `<span class="tag">#${t.trim()}</span>`).join('')}
+          <button class="read-more" id="rm-${i}">Read more ▾</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function toggleCard(i) {
+    const ans = document.getElementById(`ans-${i}`);
+    const rm  = document.getElementById(`rm-${i}`);
+    const collapsed = ans.classList.toggle('collapsed');
+    rm.textContent = collapsed ? 'Read more ▾' : 'Read less ▴';
+  }
+
+  /* ── HELPERS ── */
+  function showLoading() {
+    document.getElementById('adviceList').innerHTML = '<div class="spinner"></div>';
+    document.getElementById('resultCount').textContent = '';
+  }
+  function clearActiveCategory() {
+    document.querySelectorAll('.cat-btn.active').forEach(b => b.classList.remove('active'));
+  }
+  function urgencyIcon(u) {
+    return { LOW:'🟢', MEDIUM:'🟡', HIGH:'🔴', CRITICAL:'🚨' }[u] || '';
+  }
+  function escHtml(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  init();
+</script>
+</body>
+</html>
