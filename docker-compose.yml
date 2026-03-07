@@ -1,0 +1,63 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════════════════
+#  Life Advice App — Docker Compose
+#
+#  Usage:
+#    Start:   docker compose up --build -d
+#    Logs:    docker compose logs -f
+#    Stop:    docker compose down
+#    Restart: docker compose restart
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+
+  life-advice-app:
+    # Build from local Dockerfile (multi-stage)
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Name the running container
+    container_name: life-advice-app
+
+    # Map host port 8080 → container port 8080
+    # Change left side (e.g. "9090:8080") if port 8080 is already in use
+    ports:
+      - "8080:8080"
+
+    # Environment variable overrides (optional — app has sensible defaults)
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - SERVER_PORT=8080
+      # H2 in-memory DB config (already set in application.properties)
+      - SPRING_DATASOURCE_URL=jdbc:h2:mem:lifeadvicedb;DB_CLOSE_DELAY=-1
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin123
+      # JVM timezone
+      - TZ=Asia/Kolkata
+
+    # Resource limits — prevent the container consuming unlimited host memory
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "1.0"
+        reservations:
+          memory: 256M
+
+    # Health check — Docker will monitor the app every 30s
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+    # Always restart unless explicitly stopped
+    restart: unless-stopped
+
+    # Tag for log filtering
+    labels:
+      - "app=life-advice"
+      - "version=1.0.0"
